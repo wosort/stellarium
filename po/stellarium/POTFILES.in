@@ -216,3 +216,6 @@ plugins/OnlineQueries/src/HipOnlineQuery.cpp
 plugins/OnlineQueries/src/OnlineQueries.cpp
 plugins/OnlineQueries/src/gui/OnlineQueriesDialog.cpp
 plugins/OnlineQueries/src/ui_onlineQueriesDialog.h
+plugins/PrintSky/src/PrintSky.cpp
+plugins/PrintSky/src/gui/PrintSkyDialog.cpp
+plugins/PrintSky/src/ui_printskyDialog.h
