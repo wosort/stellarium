@@ -159,6 +159,10 @@ Q_IMPORT_PLUGIN(FOVStelPluginInterface)
 Q_IMPORT_PLUGIN(ObservabilityStelPluginInterface)
 #endif
 
+#ifdef USE_STATIC_PLUGIN_PLANES
+Q_IMPORT_PLUGIN(PlanesStelPluginInterface)
+#endif
+
 // Initialize static variables
 StelApp* StelApp::singleton = NULL;
 QTime* StelApp::qtime = NULL;

@@ -51,6 +51,8 @@ Source: "@QtConcurrent_location@"; DestDir: "{app}";
 @ISS_QML_DIR@
 @ISS_QML_PLUGINS@
 @ISS_QML_SHADERS@
+@ISS_SQLDRIVERS@
+@ISS_LIBMYSQL@
 Source: "@CMAKE_INSTALL_PREFIX@\share\stellarium\*"; DestDir: "{app}\"; Flags: recursesubdirs
 
 [Tasks]

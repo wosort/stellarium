@@ -170,6 +170,7 @@ ENDMACRO()
 ADD_PLUGIN(HelloStelModule 0)
 ADD_PLUGIN(SimpleDrawLine 0)
 #### work plugins ####
+ADD_PLUGIN(Planes 1)
 ADD_PLUGIN(AngleMeasure 1)
 ADD_PLUGIN(CompassMarks 1)
 ADD_PLUGIN(Exoplanets 1)
@@ -215,6 +216,10 @@ ENDIF()
 
 IF(USE_PLUGIN_LOGBOOK)
     SET(QT_USE_QTSQL TRUE) # For LogBook we also need SQL module
+ENDIF()
+
+IF(USE_PLUGIN_PLANES)
+	SET(QT_USE_QTSQL TRUE) # Planes plugin needs SQL module
 ENDIF()
 
 # Custom target used to manage dependencies of stellarium -> Static plugins
@@ -346,6 +351,14 @@ IF(WIN32)
     GET_TARGET_PROPERTY(QtSql_location Qt5::Sql LOCATION)
     GET_TARGET_PROPERTY(QtSvg_location Qt5::Svg LOCATION)
     GET_TARGET_PROPERTY(QtXmlPatterns_location Qt5::XmlPatterns LOCATION)
+    GET_FILENAME_COMPONENT(QT5_LIBS ${QtCore_location} PATH)
+	IF (USE_PLUGIN_PLANES)
+		SET(ISS_SQLDRIVERS "Source: \"${QT5_LIBS}/../plugins/sqldrivers/*\"; Excludes: \"*d.dll,*psql*\"; DestDir: \"{app}/sqldrivers/\";")
+		SET(ISS_LIBMYSQL "Source: \"libmysql.dll\"; DestDir: \"{app}\";")
+	ELSEIF()
+		SET(ISS_SQLDRIVERS "; Sql drivers not used")
+		SET(ISS_LIBMYSQL "; libmysql.dll unused")
+	ENDIF()
     IF(ENABLE_SCRIPTING)
         GET_TARGET_PROPERTY(QtScript_location Qt5::Script LOCATION)
         SET(ISS_QT_SCRIPT "Source: \"${QtScript_location}\"; DestDir: \"{app}\";")
@@ -358,7 +371,6 @@ IF(WIN32)
     ELSE()
         SET(ISS_QT_MULTIMEDIA "; QtMultimedia don't used")
     ENDIF()
-    GET_FILENAME_COMPONENT(QT5_LIBS ${QtCore_location} PATH)
     # TODO: Enable ANGLE support
     SET(ISS_ICU_LIBS "Source: \"${QT5_LIBS}/icu*.dll\"; DestDir: \"{app}\";")
     # Deploy related stuff
