@@ -443,7 +443,7 @@ ELSE()
    QT5_USE_MODULES(stellarium Multimedia)
  ENDIF()
  IF(USE_PLUGIN_PLANES)
-	 QT5_USE_MODULES(stelMain Sql)
+	 QT5_USE_MODULES(stellarium Sql)
  ENDIF()
 
  IF(APPLE)

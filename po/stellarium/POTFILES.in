@@ -112,3 +112,6 @@ plugins/FOV/src/FOV.cpp
 plugins/FOV/src/gui/FOVWindow.cpp
 plugins/FOV/src/ui_fovWindow.h
 plugins/NavStars/src/NavStars.cpp
+plugins/Planes/src/ui_PlanesDialog.h
+plugins/Planes/src/Flight.cpp
+plugins/Planes/src/BSDataSource.cpp
