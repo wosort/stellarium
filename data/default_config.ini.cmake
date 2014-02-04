@@ -7,6 +7,7 @@ Oculars                             = false
 Satellites                          = true
 SolarSystemEditor                   = false
 TimeZoneConfiguration               = true
+Planes								= true
 
 [video]
 fullscreen                          = true
