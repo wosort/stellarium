@@ -115,3 +115,6 @@ plugins/NavStars/src/NavStars.cpp
 plugins/Planes/src/ui_PlanesDialog.h
 plugins/Planes/src/Flight.cpp
 plugins/Planes/src/BSDataSource.cpp
+plugins/EquationOfTime/src/EquationOfTime.cpp
+plugins/EquationOfTime/src/gui/EquationOfTimeWindow.cpp
+plugins/EquationOfTime/src/ui_equationOfTimeWindow.h>>>>>>> MERGE-SOURCE
