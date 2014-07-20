@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-02-07 22:46+0700\n"
+"POT-Creation-Date: 2014-07-04 10:10+0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -684,6 +684,14 @@ msgstr ""
 
 #: nebulae/default/ngc2000names.dat:414
 msgid "The 37 Cluster"
+msgstr ""
+
+#: nebulae/default/ngc2000names.dat:415
+msgid "Cocoon galaxy"
+msgstr ""
+
+#: nebulae/default/ngc2000names.dat:416
+msgid "Jellyfish nebula"
 msgstr ""
 
 #: skycultures/arabic/constellation_names.eng.fab:1

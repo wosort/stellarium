@@ -67,6 +67,7 @@ public:
 		FrameGalactic			//! Galactic reference frame centered on observer.
 	};
 
+	//! @enum ProjectionType
 	//! Available projection types. A value of 1000 indicate the default projection
 	enum ProjectionType
 	{
@@ -80,6 +81,7 @@ public:
 		ProjectionOrthographic		//!< Orthographic projection
 	};
 
+	//! @enum RefractionMode
 	//! Available refraction mode.
 	enum RefractionMode
 	{
@@ -561,8 +563,8 @@ private:
 	double presetSkyTime;
 	QTime initTodayTime;
 	QString startupTimeMode;
-	double lastTimeChangeTime;         // Time in seconds when the time rate or time last changed
-	double lastTimeChangeJDay;         // JDay when the time rate or time last changed
+	double secondsOfLastJDayUpdate;         // Time in seconds when the time rate or time last changed
+	double JDayOfLastJDayUpdate;         // JDay when the time rate or time last changed
 
 	// Variables for custom equation of Delta-T
 	Vec3f deltaTCustomEquationCoeff;

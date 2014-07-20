@@ -48,6 +48,7 @@
 #include <QStringList>
 #include <QTextStream>
 #include <QTranslator>
+#include <QNetworkDiskCache>
 
 #include <clocale>
 
@@ -56,10 +57,11 @@
 	#ifdef _MSC_BUILD
 		#include <MMSystem.h>
 		#pragma comment(lib,"Winmm.lib")
+		#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup") // Hide console
 	#endif
 #endif //Q_OS_WIN
 
-//! @class GettextStelTranslator
+//! @class CustomQTranslator
 //! Provides custom i18n support.
 class CustomQTranslator : public QTranslator
 {
@@ -98,6 +100,13 @@ void copyDefaultConfigFile(const QString& newPath)
 	QFile::setPermissions(newPath, QFile::permissions(newPath) | QFileDevice::WriteOwner);
 }
 
+//! Removes all items from the cache.
+void clearCache()
+{
+	QNetworkDiskCache* cacheMgr = new QNetworkDiskCache();
+	cacheMgr->setCacheDirectory(StelFileMgr::getCacheDir());
+	cacheMgr->clear(); // Removes all items from the cache.
+}
 
 // Main stellarium procedure
 int main(int argc, char **argv)
@@ -115,14 +124,6 @@ int main(int argc, char **argv)
 	}
 #endif
 #ifdef Q_OS_MAC
-	// This block does not currently work
-//	 QDir dir(argv[0]);
-//	 dir.cdUp();
-//	 dir.cdUp();
-//	 dir.cd("plugins");
-//	 qDebug() << dir.absolutePath();
-//	 QCoreApplication::setLibraryPaths(QStringList(dir.absolutePath()));
-
 	 char ** newArgv = (char**) malloc((argc + 2) * sizeof(*newArgv));
 	 memmove(newArgv, argv, sizeof(*newArgv) * argc);
 	 char * option = new char[20];
@@ -139,6 +140,11 @@ int main(int argc, char **argv)
 	QCoreApplication::setApplicationVersion(StelUtils::getApplicationVersion());
 	QCoreApplication::setOrganizationDomain("stellarium.org");
 	QCoreApplication::setOrganizationName("stellarium");
+
+	// LP:1335611: Avoid troubles with search of the paths of the plugins (deployments troubles) --AW
+	#if QT_VERSION==QT_VERSION_CHECK(5, 3, 1)
+	QCoreApplication::addLibraryPath(".");
+	#endif
 	
 	QGuiApplication::setDesktopSettingsAware(false);
 
@@ -253,6 +259,9 @@ int main(int argc, char **argv)
 				else
 				{
 					qDebug() << "Attempting to use an existing older config file.";
+					confSettings->setValue("main/version", QString(PACKAGE_VERSION)); // Upgrade version of config.ini
+					clearCache();
+					qDebug() << "Clear cache and update config.ini...";
 				}
 			}
 		}
@@ -267,6 +276,7 @@ int main(int argc, char **argv)
 			copyDefaultConfigFile(configFileFullPath);
 			confSettings = new QSettings(configFileFullPath, StelIniFormat);
 			qWarning() << "Resetting defaults config file. Previous config file was backed up in " << QDir::toNativeSeparators(backupFile);
+			clearCache();
 		}
 	}
 	else
@@ -321,29 +331,54 @@ int main(int argc, char **argv)
 	app.installTranslator(&trans);
 
 	StelMainView mainWin;
+
+	bool appCanRun = true;
 	// some basic diagnostics
 	if (!QGLFormat::hasOpenGL()){
+		qWarning() << "Oops... This system does not support OpenGL.";
 		QMessageBox::warning(0, "Stellarium", q_("This system does not support OpenGL."));
+		appCanRun = false;
 	}
 
-	mainWin.init(confSettings);
-	splash.finish(&mainWin);
-	app.exec();
-	mainWin.deinit();
+	if (!(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_1) && !(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Version_2_0)) // Check supported version of OpenGL
+	{
+		// OK, minimal required version of OpenGL is 2.1 (OpenGL ES is 2.0). If platform does not support this
+		// version then say to user about troubles and quit from application.
+		#ifdef Q_OS_WIN
+		qWarning() << "Oops... Insufficient OpenGL version. Please update drivers, graphics hardware, or use MESA (or ANGLE) version.";
+		QMessageBox::warning(0, "Stellarium", q_("Insufficient OpenGL version. Please update drivers, graphics hardware, or use MESA (or ANGLE) version."));
+		#else
+		qWarning() << "Oops... Insufficient OpenGL version. Please update drivers, or graphics hardware.";
+		QMessageBox::warning(0, "Stellarium", q_("Insufficient OpenGL version. Please update drivers, or graphics hardware."));
+		#endif
+		appCanRun = false;
+	}
 
-	delete confSettings;
-	StelLogger::deinit();
+	if (appCanRun)
+	{
+		mainWin.init(confSettings);
+		splash.finish(&mainWin);
+		app.exec();
+		mainWin.deinit();
 
-#ifdef Q_OS_WIN
-	if(timerGrain)
-		timeEndPeriod(timerGrain);
-#endif //Q_OS_WIN
-#ifdef Q_OS_MAC
-	delete(newArgv);
-	delete(option);
-	delete(value);
-#endif
+		delete confSettings;
+		StelLogger::deinit();
 
-	return 0;
+		#ifdef Q_OS_WIN
+		if(timerGrain)
+			timeEndPeriod(timerGrain);
+		#endif //Q_OS_WIN
+		#ifdef Q_OS_MAC
+		delete(newArgv);
+		delete(option);
+		delete(value);
+		#endif
+
+		return 0;
+	}
+	else
+	{
+		app.quit();
+	}
 }
 

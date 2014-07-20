@@ -16,9 +16,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Suite 500, Boston, MA  02110-1335, USA.
  */
-#include <cstdlib>
-#include "StelTextureMgr.hpp"
+
 #include "StelTexture.hpp"
+#include "StelTextureMgr.hpp"
 #include "glues.h"
 #include "StelFileMgr.hpp"
 #include "StelApp.hpp"
@@ -35,11 +35,12 @@
 #include <QFuture>
 #include <QtConcurrent>
 
+#include <cstdlib>
+
 StelTexture::StelTexture() : networkReply(NULL), loader(NULL), errorOccured(false), id(0), avgLuminance(-1.f)
 {
 	width = -1;
 	height = -1;
-	initializeOpenGLFunctions();
 }
 
 StelTexture::~StelTexture()
@@ -80,7 +81,7 @@ void StelTexture::reportError(const QString& aerrorMessage)
 
 StelTexture::GLData StelTexture::imageToGLData(const QImage &image)
 {
-	GLData ret;
+	GLData ret = GLData();
 	if (image.isNull())
 		return ret;
 	ret.width = image.width();
@@ -118,9 +119,6 @@ bool StelTexture::bind(int slot)
 	if (errorOccured)
 		return false;
 
-	if (fullPath.isEmpty())
-		return false;
-
 	// If the file is remote, start a network connection.
 	if (loader == NULL && networkReply == NULL && fullPath.startsWith("http://")) {
 		QNetworkRequest req = QNetworkRequest(QUrl(fullPath));
@@ -147,15 +145,6 @@ bool StelTexture::bind(int slot)
 	glLoad(loader->result());
 	delete loader;
 	loader = NULL;
-	return true;
-}
-
-bool StelTexture::loadFromMemory(const char *data, int width, int height, GLint format, GLint type, GLint internalFormat)
-{
-	if (!fullPath.isEmpty())
-		return false;
-
-	loadData(data, width, height, format, type, internalFormat);
 	return true;
 }
 
@@ -263,25 +252,6 @@ QByteArray StelTexture::convertToGLFormat(const QImage& image, GLint *format, GL
 	return ret;
 }
 
-void StelTexture::loadData(const char *data, int width, int height, GLint format, GLint type, GLint internalFormat)
-{
-	this->width = width;
-	this->height = height;
-	glActiveTexture(GL_TEXTURE0);
-	glGenTextures(1, &id);
-	glBindTexture(GL_TEXTURE_2D, id);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, loadParams.filtering);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, loadParams.filtering);
-	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat == 0 ? format : internalFormat, width, height, 0, format, type, data);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, loadParams.wrapMode);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, loadParams.wrapMode);
-	if (loadParams.generateMipmaps)
-	{
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-}
-
 bool StelTexture::glLoad(const GLData& data)
 {
 	if (data.data.isEmpty())
@@ -289,9 +259,22 @@ bool StelTexture::glLoad(const GLData& data)
 		reportError("Unknown error");
 		return false;
 	}
-
-	loadData(data.data.constData(), data.width, data.height, data.format, data.type);
-
+	width = data.width;
+	height = data.height;
+	glActiveTexture(GL_TEXTURE0);
+	glGenTextures(1, &id);
+	glBindTexture(GL_TEXTURE_2D, id);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, loadParams.filtering);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, loadParams.filtering);
+	glTexImage2D(GL_TEXTURE_2D, 0, data.format, width, height, 0, data.format,
+				 data.type, data.data.constData());
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, loadParams.wrapMode);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, loadParams.wrapMode);
+	if (loadParams.generateMipmaps)
+	{
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
 	// Report success of texture loading
 	emit(loadingProcessFinished(false));
 	return true;

@@ -73,19 +73,24 @@ StelPluginInfo SatellitesStelPluginInterface::getPluginInfo() const
 }
 
 Satellites::Satellites()
-	: satelliteListModel(NULL),
-	  pxmapGlow(NULL),
-	  pxmapOnIcon(NULL),
-	  pxmapOffIcon(NULL),
-	  toolbarButton(NULL),
-	  earth(NULL),
-	  defaultHintColor(0.0, 0.4, 0.6),
-	  defaultOrbitColor(0.0, 0.3, 0.6),
-	  progressBar(NULL)
+	: satelliteListModel(NULL)
+	, toolbarButton(NULL)
+	, earth(NULL)
+	, defaultHintColor(0.0, 0.4, 0.6)
+	, defaultOrbitColor(0.0, 0.3, 0.6)
+	, updateState(CompleteNoUpdates)
+	, downloadMgr(NULL)
+	, progressBar(NULL)
+	, numberDownloadsComplete(0)
+	, updateTimer(0)
+	, updatesEnabled(false)
+	, autoAddEnabled(false)
+	, autoRemoveEnabled(false)
+	, updateFrequencyHours(0)
+	, messageTimer(0)
 {
 	setObjectName("Satellites");
 	configDialog = new SatellitesDialog();
-	QOpenGLFunctions_1_2::initializeOpenGLFunctions();
 }
 
 void Satellites::deinit()
@@ -97,13 +102,6 @@ void Satellites::deinit()
 Satellites::~Satellites()
 {
 	delete configDialog;
-	
-	if (pxmapGlow)
-		delete pxmapGlow;
-	if (pxmapOnIcon)
-		delete pxmapOnIcon;
-	if (pxmapOffIcon)
-		delete pxmapOffIcon;
 }
 
 
@@ -139,19 +137,23 @@ void Satellites::init()
 		texPointer = StelApp::getInstance().getTextureManager().createTexture(StelFileMgr::getInstallationDir()+"/textures/pointeur5.png");
 		Satellite::hintTexture = StelApp::getInstance().getTextureManager().createTexture(":/satellites/hint.png");
 
-		// key bindings and other actions
-		StelGui* gui = dynamic_cast<StelGui*>(StelApp::getInstance().getGui());
+		// key bindings and other actions		
 		QString satGroup = N_("Satellites");
 		addAction("actionShow_Satellite_Hints", satGroup, N_("Satellite hints"), "hintsVisible", "Ctrl+Z");
 		addAction("actionShow_Satellite_Labels", satGroup, N_("Satellite labels"), "labelsVisible", "Shift+Z");
 		addAction("actionShow_Satellite_ConfigDialog_Global", satGroup, N_("Satellites configuration window"), configDialog, "visible", "Alt+Z");
 
 		// Gui toolbar button
-		pxmapGlow = new QPixmap(":/graphicGui/glow32x32.png");
-		pxmapOnIcon = new QPixmap(":/satellites/bt_satellites_on.png");
-		pxmapOffIcon = new QPixmap(":/satellites/bt_satellites_off.png");
-		toolbarButton = new StelButton(NULL, *pxmapOnIcon, *pxmapOffIcon, *pxmapGlow, "actionShow_Satellite_Hints");
-		gui->getButtonBar()->addButton(toolbarButton, "065-pluginsGroup");
+		StelGui* gui = dynamic_cast<StelGui*>(StelApp::getInstance().getGui());
+		if (gui!=NULL)
+		{
+			toolbarButton = new StelButton(NULL,
+						       QPixmap(":/satellites/bt_satellites_on.png"),
+						       QPixmap(":/satellites/bt_satellites_off.png"),
+						       QPixmap(":/graphicGui/glow32x32.png"),
+						       "actionShow_Satellite_Hints");
+			gui->getButtonBar()->addButton(toolbarButton, "065-pluginsGroup");
+		}
 	}
 	catch (std::runtime_error &e)
 	{
@@ -754,9 +756,10 @@ QVariantMap Satellites::loadDataMap(QString path)
 	if (!jsonFile.open(QIODevice::ReadOnly))
 		qWarning() << "Satellites::loadTleMap cannot open " << QDir::toNativeSeparators(path);
 	else
+	{
 		map = StelJsonParser::parse(&jsonFile).toMap();
-
-	jsonFile.close();
+		jsonFile.close();
+	}
 	return map;
 }
 
@@ -1335,7 +1338,7 @@ void Satellites::updateFromFiles(QStringList paths, bool deleteFiles)
 		QFile tleFile(tleFilePath);
 		if (tleFile.open(QIODevice::ReadOnly|QIODevice::Text))
 		{
-			parseTleFile(tleFile, newTleSets);
+			parseTleFile(tleFile, newTleSets, autoAddEnabled);
 			tleFile.close();
 
 			if (deleteFiles)
@@ -1470,6 +1473,7 @@ void Satellites::parseTleFile(QFile& openFile,
 	// Code mostly re-used from updateFromFiles()
 	int lineNumber = 0;
 	TleData lastData;
+	lastData.addThis = addFlagValue;
 	
 	while (!openFile.atEnd())
 	{
@@ -1604,7 +1608,7 @@ void Satellites::drawPointer(StelCore* core, StelPainter& painter)
 		// Compute 2D pos and return if outside screen
 		if (!prj->project(pos, screenpos))
 			return;
-		glColor3f(0.4f,0.5f,0.8f);
+		painter.setColor(0.4f,0.5f,0.8f);
 		texPointer->bind();
 
 		glEnable(GL_TEXTURE_2D);
