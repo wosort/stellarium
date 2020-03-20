@@ -106,11 +106,6 @@ public:
 	//! Returns the information about the GL context, this does not require the context to be active.
 	GLInfo getGLInformation() const { return glInfo; }
 
-	//! Return the QGLWidget encapsulating the Stellarium main sky view.
-	//! Use its layout if you want to rendering OpenGL Graphics.
-	//! Added for PrintSky plugin.
-	StelQGLWidget* getStelQGLWidget() {return glWidget;}
-
 public slots:
 
 	//! Set whether fullscreen is activated or not
