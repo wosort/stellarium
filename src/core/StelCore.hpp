@@ -68,6 +68,7 @@ class StelCore : public QObject
 	Q_PROPERTY(QString currentTimeZone READ getCurrentTimeZone WRITE setCurrentTimeZone NOTIFY currentTimeZoneChanged)
 	Q_PROPERTY(bool flagUseCTZ READ getUseCustomTimeZone WRITE setUseCustomTimeZone NOTIFY useCustomTimeZoneChanged)
 	Q_PROPERTY(bool flagUseDST READ getUseDST WRITE setUseDST NOTIFY flagUseDSTChanged)
+	Q_PROPERTY(bool flagClearSky READ getFlagClearSky WRITE setFlagClearSky NOTIFY flagClearSkyChanged)
 
 public:
 	//! @enum FrameType
@@ -750,6 +751,11 @@ public slots:
 	//! @param positionEqJnow position vector in rectangular equatorial coordinates of current epoch&equinox.
 	QString getIAUConstellation(const Vec3d positionEqJnow) const;
 
+	//! get state of the clear sky flag. For regular use it should be true, while false will overdraw the previous frame
+	bool getFlagClearSky() const {return flagClearSky;}
+	//! set state of the clear sky flag. For regular use it should be true, while false will overdraw the previous frame
+	void setFlagClearSky(const bool state);
+
 signals:
 	//! This signal is emitted when the observer location has changed.
 	void locationChanged(const StelLocation&);
@@ -799,6 +805,8 @@ signals:
 	//! Emitted when button "Save settings" is pushed
 	void configurationDataSaved();
 	void updateSearchLists();
+	//! Emitted when clear sky flag changed.
+	void flagClearSkyChanged(bool state);
 
 private:
 	StelToneReproducer* toneReproducer;		// Tones conversion between stellarium world and display device
@@ -890,6 +898,8 @@ private:
 	bool de441Available; // ephem file found
 	bool de440Active;    // available and user-activated.
 	bool de441Active;    // available and user-activated.
+
+	bool flagClearSky; // Keep this true unless you want to render star streaks.
 };
 
 #endif // STELCORE_HPP
