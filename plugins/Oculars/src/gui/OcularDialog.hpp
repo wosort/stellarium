@@ -28,6 +28,7 @@
 #include "StelStyle.hpp"
 #include "Telescope.hpp"
 #include "Lens.hpp"
+#include "Finder.hpp"
 #include "VecMath.hpp"
 
 class Ui_ocularDialogForm;
@@ -49,7 +50,7 @@ class OcularDialog : public StelDialog
 	Q_OBJECT
 
 public:
-	OcularDialog(Oculars* plugin, QList<CCD *>* ccds, QList<Ocular *>* oculars, QList<Telescope *>* telescopes, QList<Lens *>* lenses);
+	OcularDialog(Oculars* plugin, QList<CCD *>* ccds, QList<Ocular *>* oculars, QList<Telescope *>* telescopes, QList<Lens *>* lenses, QList<Finder *>* finders);
 	virtual ~OcularDialog();
 
 public slots:
@@ -58,18 +59,22 @@ public slots:
 	void deleteSelectedOcular();
 	void deleteSelectedTelescope();
 	void deleteSelectedLens();
+	void deleteSelectedFinder();
 	void insertNewCCD();
 	void insertNewOcular();
 	void insertNewTelescope();
 	void insertNewLens();
+	void insertNewFinder();
 	void moveUpSelectedSensor();
 	void moveUpSelectedOcular();
 	void moveUpSelectedTelescope();
 	void moveUpSelectedLens();
+	void moveUpSelectedFinder();
 	void moveDownSelectedSensor();
 	void moveDownSelectedOcular();
 	void moveDownSelectedTelescope();
 	void moveDownSelectedLens();
+	void moveDownSelectedFinder();
 	void retranslate();
 
 	// Mini-methods required to immediately update display
@@ -81,6 +86,8 @@ public slots:
 	void selectCCD(const QModelIndex);
 	void updateTelescope();
 	void selectTelescope(const QModelIndex);
+	void updateFinder();
+	void selectFinder(const QModelIndex);
 
 protected:
 	//! Initialize the dialog widgets and connect the signals/slots
@@ -109,6 +116,9 @@ private:
 	QDataWidgetMapper*		lensMapper;
 	QList<Lens *>*			lenses;
 	PropertyBasedTableModel*	lensTableModel;
+	QDataWidgetMapper*		finderMapper;
+	QList<Finder *>*		finders;
+	PropertyBasedTableModel*	finderTableModel;
 	QRegExpValidator*		validatorName;
 };
 
