@@ -44,19 +44,16 @@ Ocular::~Ocular()
 {
 }
 
-static QMap<int, QString> mapping;
+static const QMap<int, QString> mapping={
+	{0, "name"                 },
+	{1, "apparentFOV"          },
+	{2, "effectiveFocalLength" },
+	{3, "fieldStop"	           },
+	{4, "binoculars"           }, // TODO: Remove this around V0.23
+	{5, "permanentCrosshair"   },
+	{6, "reticlePath"	   }};
 QMap<int, QString> Ocular::propertyMap(void)
 {
-	if(mapping.isEmpty()) {
-		mapping = QMap<int, QString>();
-		mapping[0] = "name";
-		mapping[1] = "apparentFOV";
-		mapping[2] = "effectiveFocalLength";
-		mapping[3] = "fieldStop";
-		mapping[4] = "binoculars";
-		mapping[5] = "permanentCrosshair";
-		mapping[6] = "reticlePath";
-	}
 	return mapping;
 }
 

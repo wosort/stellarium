@@ -36,14 +36,12 @@ Lens::~Lens()
 {
 }
 
-static QMap<int, QString> mapping;
+static const QMap<int, QString> mapping={
+	{0, "name"      },
+	{1, "multipler" }
+};
 QMap<int, QString> Lens::propertyMap()
 {
-	if(mapping.isEmpty()) {
-		mapping = QMap<int, QString>();
-		mapping[0] = "name";
-		mapping[1] = "multipler";
-	}
 	return mapping;
 }
 
