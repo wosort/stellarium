@@ -37,7 +37,7 @@ public:
 	//! The default implementation does nothing.
 	virtual void alterBuffer(QOpenGLFramebufferObject*) const {;}
 	//! Draw the viewport on the screen.
-	//! @param buf the GL frame buffer containing the Stellarium viewport alreay drawn.
+	//! @param buf the GL frame buffer containing the Stellarium viewport already drawn.
 	//! The default implementation paints the buffer on the fullscreen.
 	virtual void paintViewportBuffer(const QOpenGLFramebufferObject* buf) const;
 	//! Distort an x,y position according to the distortion.
@@ -50,10 +50,10 @@ class StelViewportDistorterFisheyeToSphericMirror : public StelViewportEffect
 {
 public:
 	StelViewportDistorterFisheyeToSphericMirror(int screen_w,int screen_h);
-	~StelViewportDistorterFisheyeToSphericMirror();
-	virtual QString getName() const {return "sphericMirrorDistorter";}
-	virtual void paintViewportBuffer(const QOpenGLFramebufferObject* buf) const;
-	virtual void distortXY(qreal& x, qreal& y) const;
+	~StelViewportDistorterFisheyeToSphericMirror() Q_DECL_OVERRIDE;
+	virtual QString getName() const Q_DECL_OVERRIDE {return "sphericMirrorDistorter";}
+	virtual void paintViewportBuffer(const QOpenGLFramebufferObject* buf) const Q_DECL_OVERRIDE;
+	virtual void distortXY(qreal& x, qreal& y) const Q_DECL_OVERRIDE;
 private:
 	const int screen_w;
 	const int screen_h;
@@ -68,6 +68,19 @@ private:
 	QVector<Vec2f> displayVertexList;
 	QVector<Vec4f> displayColorList;
 	QVector<Vec2f> displayTexCoordList;
+};
+
+class StelViewportFaderEffect : public StelViewportEffect
+{
+public:
+	StelViewportFaderEffect() {}
+	//~StelViewportFaderEffect() Q_DECL_OVERRIDE;
+	virtual QString getName() const Q_DECL_OVERRIDE {return "viewportFaderEffect";}
+	//! Alter the GL frame buffer, this method must not display anything.
+	//! The implementation in this class reduces the brightness of the existing buffer.
+	virtual void alterBuffer(QOpenGLFramebufferObject* buf) const Q_DECL_OVERRIDE;
+	//virtual void paintViewportBuffer(const QOpenGLFramebufferObject* buf) const Q_DECL_OVERRIDE;
+//private:
 };
 
 #endif // STELVIEWPORTEFFECT_HPP
